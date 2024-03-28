@@ -1,5 +1,5 @@
 import "./App.css";
-import { useContext, useEffect } from "react";
+import { useContext, useEffect, useRef } from "react";
 import { AppContext } from "./context/AppContext";
 import Home from "./pages/Home";
 import TagPage from "./pages/TagPage";
@@ -8,29 +8,35 @@ import BlogPage from "./pages/BlogPage";
 import { Routes, Route, useSearchParams, useLocation } from "react-router-dom";
 
 export default function App() {
-  const { fetchBlogPosts,theme } = useContext(AppContext);
-  const [searchParams,setSearchParams] = useSearchParams();
+  const { fetchBlogPosts, theme } = useContext(AppContext);
+  const [searchParams] = useSearchParams();
   const location = useLocation();
+  const prevPage = useRef(null);
+  const prevTag = useRef(null);
+  const prevCategory = useRef(null);
 
   useEffect(() => {
-    // // Fetch the inital Blogposts data
-    // fetchBlogPosts();
-    // // eslint-disable-next-line react-hooks/exhaustive-deps
-
     const page = searchParams.get('page') ?? 1;
-    if(location.pathname.includes("tags")){
-      // Tag Page 
-      const tag = location.pathname.split("/").at(-1).replaceAll("-"," ");
-      fetchBlogPosts(Number(page),tag);
+    let tag = null;
+    let category = null;
+
+    if (location.pathname.includes("tags")) {
+      tag = location.pathname.split("/").at(-1).replaceAll("-", " ");
+    } else if (location.pathname.includes("categories")) {
+      category = location.pathname.split("/").at(-1).replaceAll("-", " ");
     }
-    else if(location.pathname.includes("categories")){
-      const category = location.pathname.split("/").at(-1).replaceAll("-"," ");
-      fetchBlogPosts(Number(page),null,category);
+
+    if (
+      page !== prevPage.current || 
+      tag !== prevTag.current || 
+      category !== prevCategory.current
+    ) {
+      fetchBlogPosts(Number(page), tag, category);
+      prevPage.current = page;
+      prevTag.current = tag;
+      prevCategory.current = category;
     }
-    else{
-      fetchBlogPosts(Number(page))
-    }
-  }, [location.pathname,location.search]);
+  }, [fetchBlogPosts, searchParams, location.pathname]);
 
   return (
     <div className={theme === 'dark' ? 'dark-mode' : ''}>
