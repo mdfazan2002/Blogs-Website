@@ -10,30 +10,28 @@ const BlogPage = () => {
   const location = useLocation();
   const navigation = useNavigate();
   const { loading, setLoading, theme } = useContext(AppContext);
-  const blogId = location.pathname.split("/").at(-1);
-  const newBaseUrl = "https://codehelp-apis.vercel.app/api/";
-
-  async function fetchRelatedBlogs() {
-    setLoading(true);
-    let url = `${newBaseUrl}get-blog?blogId=${blogId}`;
-    try {
-      const res = await fetch(url);
-      const data = await res.json();
-      setBlog(data.blog);
-      setRelatedblog(data.relatedBlogs);
-    } catch (err) {
-      console.log(err);
-      setBlog(null);
-      setRelatedblog([]);
-    }
-    setLoading(false);
-  }
 
   useEffect(() => {
-    if (blogId) {
-      fetchRelatedBlogs();
-    }
-  }, [location.pathname]);
+    const fetchRelatedBlogs = async () => {
+      setLoading(true);
+      const blogId = location.pathname.split("/").at(-1);
+      const newBaseUrl = "https://codehelp-apis.vercel.app/api/";
+      const url = `${newBaseUrl}get-blog?blogId=${blogId}`;
+      try {
+        const res = await fetch(url);
+        const data = await res.json();
+        setBlog(data.blog);
+        setRelatedblog(data.relatedBlogs);
+      } catch (err) {
+        console.log(err);
+        setBlog(null);
+        setRelatedblog([]);
+      }
+      setLoading(false);
+    };
+
+    fetchRelatedBlogs();
+  }, [location.pathname, setLoading]);
 
   return (
     <div
